@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import DataGrid, { SelectColumn, Column, TextEditor} from 'react-data-grid';
+import { useMediaQuery } from './useMediaQuery';
 
 export function App() {
+  const isSmall = useMediaQuery('(max-width: 760px)'); 
   return (
-    <div style={{ margin: 100 }}>
+    <div style={{ margin: isSmall ? 16 : 80 }}>
       <ReactDataGridSample />
     </div>
   )
