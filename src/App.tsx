@@ -1,5 +1,5 @@
-import React from 'react';
-import DataGrid, { SelectColumn, Column, TextEditor} from 'react-data-grid';
+import React, { useCallback, useRef } from 'react';
+import DataGrid, { SelectColumn, Column, EditorProps } from 'react-data-grid';
 import { useMediaQuery } from './useMediaQuery';
 
 export function App() {
@@ -42,6 +42,67 @@ function DateTimeFormatter({ datetime }: { datetime: Date }) {
 function CurrencyFormatter({ value }: { value: number }) {
   return <>{currencyFormatter.format(value)}</>;
 }
+
+const textEditorClassname = `rdg-text-editor`;
+
+const autoFocusAndSelect = (input: HTMLInputElement | null) => {
+    input?.focus();
+    input?.select();
+};
+
+// https://github.com/adazzle/react-data-grid/blob/main/src/editors/TextEditor.tsx
+function TextEditor<T>({
+    row,
+    column,
+    onRowChange,
+    onClose,
+}: EditorProps<T>) {
+    const onComposition = useRef(false);
+
+    const handleComposition = useCallback(
+        (e: React.CompositionEvent<HTMLInputElement>) => {
+            if (e.type === 'compositionend') {
+                onComposition.current = false;
+            } else {
+                onComposition.current = true;
+            }
+        },
+        []
+    );
+
+    const handleKeydown = useCallback((e: React.KeyboardEvent) => {
+        if (onComposition.current && e.key === 'Enter') {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    }, []);
+
+    return (
+        <input
+            style={{
+              appearance: "none",
+              boxSizing: "border-box",
+              width: "100%",
+              height: "100%",
+              padding: "0 6px 0 6px",
+              border: "2px solid #ccc",
+              verticalAlign: "top",
+              fontFamily: "inherit",
+            }}
+            className={textEditorClassname}
+            ref={autoFocusAndSelect}
+            value={(row[column.key as keyof T] as unknown) as string}
+            onChange={(event) =>
+                onRowChange({ ...row, [column.key]: event.target.value })
+            }
+            onBlur={() => onClose(true)}
+            onKeyDown={handleKeydown}
+            onCompositionStart={handleComposition}
+            onCompositionUpdate={handleComposition}
+            onCompositionEnd={handleComposition}
+        />
+    );
+};
 
 type Row = {
   id: string,
