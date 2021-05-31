@@ -31,7 +31,12 @@ const currencyFormatter = new Intl.NumberFormat("ja-JP", {
   currency: 'jpy'
 });
 
+const dateRegex = /^[\d]{4}-[\d]{2}-[\d]{2}$/;
+
 function DateFormatter({ date }: { date: string }) {
+  if (!dateRegex.test(date)) {
+    return <>Invalid Date</>;
+  }
   return <>{dateFormatter.format(new Date(date))}</>;
 }
 
@@ -39,8 +44,14 @@ function DateTimeFormatter({ datetime }: { datetime: Date }) {
   return <>{dateTimeFormatter.format(datetime)}</>;
 }
 
-function CurrencyFormatter({ value }: { value: number }) {
-  return <>{currencyFormatter.format(value)}</>;
+function CurrencyFormatter({ value }: { value: string }) {
+  if (value === "") {
+    return <>￥</>;
+  }
+  if (isNaN(Number(value))) {
+    return <>Invalid Number</>;
+  }
+  return <>{currencyFormatter.format(Number(value))}</>;
 }
 
 const textEditorClassname = `rdg-text-editor`;
@@ -150,7 +161,7 @@ const columns: Column<Row>[] = [
     width: 160,
     editor: TextEditor,
     editorOptions: { onCellKeyDown },
-    formatter: ({ row }) =>  <CurrencyFormatter value={Number(row.price)} />
+    formatter: ({ row }) =>  <CurrencyFormatter value={row.price} />
   },
   { 
     key: 'date',
